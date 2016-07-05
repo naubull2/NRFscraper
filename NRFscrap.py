@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from lxml import html
 
 HOST_NAME = 'lime@kdd.snu.ac.kr'
+SCRAP_TIME = '18:00'
 new_assignments = set() 
 
 def job(links):
@@ -97,10 +98,10 @@ def notify(host_addrs, to_whom):
     FROM = host_addrs 
     today_is = time.strftime('%d')
     TO = []
-    if type(to_whom) == 'list':
+    if type(to_whom) is list:
         for date, user_mail in to_whom:
             if today_is == date:
-                TO.extend(user_mail)
+                TO.append(user_mail)
     else:
         TO.append(to_whom)
     SUBJECT = '[Research fund notification]'
@@ -111,21 +112,22 @@ def notify(host_addrs, to_whom):
         TEXT = '\n\n'.join(map(lambda x: '[%s]\t%s\n%s' % (x[1], unicode(x[0]), x[2]),
                              map(list, new_assignments)))
 
-    message = MIMEText(TEXT, 'plain', 'utf-8')
-    message['Subject'] = SUBJECT
-    message['From'] = FROM
-    message['To'] = to_whom
-
     server = smtplib.SMTP(host='your.smtp.server', port=25)
     server.set_debuglevel(1)
     server.starttls()
-    server.sendmail(FROM, TO, message.as_string())
+    # only send if the receivers are designated
+    if TO:
+        message = MIMEText(TEXT, 'plain', 'utf-8')
+        message['Subject'] = SUBJECT
+        message['From'] = FROM
+        message['To'] = ','.join(TO)
+        server.sendmail(FROM, TO, message.as_string())
+
+        # clear list
+        new_assignments.clear()
+        print("Sent a mail to {}".format(to_whom))
+
     server.quit()
-    print("Sent a mail to {}".format(to_whom))
-
-    # clear list
-    new_assignments.clear()
-
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
@@ -149,16 +151,13 @@ if __name__=='__main__':
             for line in f:
                 date, mail = line.strip().split()
                 users.append((date, mail))
-
-    print('Scheduled to notify to %s at %s everyday!'
-                            % (to_whom, timed_at))
-
-    if type(to_whom) == 'list':
         schedule.every().day.at(timed_at).do(notify, HOST_NAME, users)
     else:
         schedule.every().day.at(timed_at).do(notify, HOST_NAME, to_whom)
-    schedule.every(1).hours.do(job, links)
+    schedule.every().day.at(SCRAP_TIME).do(job, links)
+    print('Scheduled to notify to %s at %s everyday!'
+                            % (to_whom, timed_at))
 
     while True:
         schedule.run_pending()
-        time.sleep(600)
+        time.sleep(10)
