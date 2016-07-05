@@ -93,9 +93,16 @@ def notify(host_addrs, to_whom):
     # send an email containing a list of new assignments
     global new_assignments
 
-    # create message
+    # create message for the responsible members from the user list
     FROM = host_addrs 
-    TO = [to_whom]
+    today_is = time.strftime('%d')
+    TO = []
+    if type(to_whom) == 'list':
+        for date, user_mail in to_whom:
+            if today_is == date:
+                TO.extend(user_mail)
+    else:
+        TO.append(to_whom)
     SUBJECT = '[Research fund notification]'
     if len(new_assignments) == 0:
         TEXT = 'Nothing to report!'
@@ -129,15 +136,27 @@ if __name__=='__main__':
         print('  - Time format is in 24hr, e.g., 13:30')
         exit()
 
+    links = []
     with open(sys.argv[1], 'r') as f:
         links = [line.strip() for line in f]
 
     # The timer format is "hh:mm"
     timed_at = sys.argv[2]
     to_whom = sys.argv[3]
-    print('Scheduled to notify to {} at {} everyday!'.format(to_whom, timed_at))
+    users = []
+    if to_whom.rsplit('.',1)[-1] == 'txt':
+        with open(to_whom, 'r') as f:
+            for line in f:
+                date, mail = line.strip().split()
+                users.append((date, mail))
 
-    schedule.every().day.at(timed_at).do(notify, HOST_NAME, to_whom)
+    print('Scheduled to notify to %s at %s everyday!'
+                            % (to_whom, timed_at))
+
+    if type(to_whom) == 'list':
+        schedule.every().day.at(timed_at).do(notify, HOST_NAME, users)
+    else:
+        schedule.every().day.at(timed_at).do(notify, HOST_NAME, to_whom)
     schedule.every(1).hours.do(job, links)
 
     while True:
