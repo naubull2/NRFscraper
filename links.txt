@@ -1,0 +1,7 @@
+http://www.nrf.re.kr/nrf_tot_cms/board/biz_notice/list.jsp?show_no=170&check_no=169&c_relation=biz&c_relation2=0&c_no=42&c_now_tab=1
+http://www.nrf.re.kr/nrf_tot_cms/board/biz_notice/list.jsp?show_no=170&check_no=169&c_relation=biz&c_relation2=0&c_no=314&c_now_tab=1
+http://www.nrf.re.kr/nrf_tot_cms/board/biz_notice/list.jsp?show_no=170&check_no=169&c_relation=biz&c_relation2=0&c_no=315&c_now_tab=1
+http://rndgate.ntis.go.kr/switch.do?prefix=/un&page=/unRndList.do?method=retrieveList
+http://www.iitp.kr/kr/1/business/businessNotify.it
+http://snurnd.snu.ac.kr/web/www/inf_01_01
+https://pcm.etri.re.kr/pcmx/comm/anno/annoList.do
