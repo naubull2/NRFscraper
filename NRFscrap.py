@@ -125,7 +125,7 @@ if __name__=='__main__':
         print('Usage: python [%s] [%s] [%s]' 
                 % ('a file of links to check',
                    'time in HH:MM format',
-                   'an email address to send notification to')
+                   'an email address to send notification to'))
         print('  - Time format is in 24hr, e.g., 13:30')
         exit()
 
