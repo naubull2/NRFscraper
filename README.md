@@ -3,9 +3,7 @@
 ## Prerequisites
 다음의 Python 패키지를 사용합니다.
 - schedule
-- smtplib
-- lxml
-- email
+    - https://github.com/dbader/schedule
 
 ## Usage
 Python 스케쥴러로 한 시간 마다 게시판들을 확인하여 당일 올라온 게시물을 스크랩 해둡니다.
