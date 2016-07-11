@@ -1,14 +1,19 @@
 import sys
+import signal
 import requests
 import schedule
+import pickle
 import re
 import time
 import smtplib
+
 from email.mime.text import MIMEText
 from lxml import html
+from os.path import isfile
 
-HOST_NAME = 'lime@kdd.snu.ac.kr'
+HOST_NAME = 'lime'
 SCRAP_TIME = '18:00'
+BACKUP_PKL = 'NRF.pkl'
 new_assignments = set() 
 
 def job(links):
@@ -86,6 +91,10 @@ def job(links):
                     for title, date in zip(titles, dates)
                                       if date == date_today]
             print('Checked SNU RND')
+        if len(assignments) > 0:
+            print('There are some new notifications!')
+        else:
+            print('Nothing new!')
         # add any new assignments
         for assign in assignments:
             new_assignments.add(assign)
@@ -113,7 +122,7 @@ def notify(host_addrs, to_whom):
                              map(list, new_assignments)))
 
     server = smtplib.SMTP(host='your.smtp.server', port=25)
-    server.set_debuglevel(1)
+    #server.set_debuglevel(1)
     server.starttls()
     # only send if the receivers are designated
     if TO:
@@ -125,9 +134,15 @@ def notify(host_addrs, to_whom):
 
         # clear list
         new_assignments.clear()
-        print("Sent a mail to {}".format(to_whom))
+        print("Sent a mail to {}".format(TO))
 
     server.quit()
+
+def signal_handler(signal, frame):
+    # save the set of new titles in a file
+    global new_assignments
+    pickle.dump(new_assignments, open(BACKUP_PKL, 'wb'))
+    sys.exit(0)
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
@@ -137,10 +152,15 @@ if __name__=='__main__':
                    'an email address to send notification to'))
         print('  - Time format is in 24hr, e.g., 13:30')
         exit()
+    signal.signal(signal.SIGINT, signal_handler)
 
     links = []
     with open(sys.argv[1], 'r') as f:
         links = [line.strip() for line in f]
+
+    if isfile(BACKUP_PKL):
+        new_assignments = pickle.load(open(BACKUP_PKL, 'rb'))
+     
 
     # The timer format is "hh:mm"
     timed_at = sys.argv[2]
@@ -157,6 +177,7 @@ if __name__=='__main__':
     schedule.every().day.at(SCRAP_TIME).do(job, links)
     print('Scheduled to notify to %s at %s everyday!'
                             % (to_whom, timed_at))
+    signal.pause() # wait for the SIGINT
 
     while True:
         schedule.run_pending()
