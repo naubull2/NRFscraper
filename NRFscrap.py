@@ -177,7 +177,6 @@ if __name__=='__main__':
     schedule.every().day.at(SCRAP_TIME).do(job, links)
     print('Scheduled to notify to %s at %s everyday!'
                             % (to_whom, timed_at))
-    signal.pause() # wait for the SIGINT
 
     while True:
         schedule.run_pending()
